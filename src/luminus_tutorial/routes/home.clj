@@ -14,6 +14,12 @@
     (merge {:messages (db/get-messages)}
            (select-keys flash [:name :message :errors]))))
 
+(defn validate-message [params]
+  (first (b/validate
+      params
+      :name v/required
+      :message [v/required [v/min-count 10]])))
+
 (defn save-message! [{:keys [params]}]
   (if-let [errors (validate-message params)]
     (-> (redirect "/")
@@ -23,18 +29,10 @@
       (redirect "/"))))
 
 (defn about-page []
-  (layout/render "about.html"))
+  (layout/render "about.html"));
 
 (defroutes home-routes
-  (GET "/" request (home-page))
+  (GET "/" request (home-page request))
   (POST "/" request (save-message! request))
   (GET "/about" request (about-page)))
-
-(defn validate-message [params]
-  (first
-    (b/validate
-      params
-      :name v/required
-      :message [v/required [v/min-count 10]])))
-
 
